@@ -1,6 +1,8 @@
 import * as React from "react";
 import * as _ from "lodash";
 
+import "../css/app.css";
+
 
 interface Values {
   [a: string]: string
@@ -23,10 +25,12 @@ const reducer = (state: Values, action: Action) => {
 }
 
 export const App = () => {
-  const [cell, setCell] = React.useState("A1");
+  const [cell, setCell] = React.useState("A0");
   const [width, setWidth] = React.useState(10)
   const [height, setHeight] = React.useState(10)
   const [values, dispatch] = React.useReducer(reducer, initialValues);
+  const valueInput = React.useRef(null);
+
   const value = values[cell] || "";
   const columnLabels = _.range(width).map(column => String.fromCharCode(65 + column));
   const rowLabels = _.range(height);
@@ -34,27 +38,36 @@ export const App = () => {
   return (
     <main>
       <header>
-        Location: { cell }
-        <input
-          name="width"
-          type="number"
-          value={width}
-          onChange={evt => setWidth(parseInt(evt.target.value))}/>
-        <label htmlFor="width">Width</label>
-        <input
-          name="height"
-          type="number"
-          value={height}
-          onChange={evt => setHeight(parseInt(evt.target.value))}/>
-        <label htmlFor="height">Height</label>
-        <input
-          name="value"
-          type="text"
-          value={value}
-          onChange={evt => dispatch({ type: "SET", cell, value: evt.target.value })}/>
-        <label htmlFor="value">Value</label>
-
+        <ul>
+          <li>
+            <label htmlFor="width">Width</label>
+            <input
+              name="width"
+              type="number"
+              value={width}
+              onChange={evt => setWidth(parseInt(evt.target.value))}/>
+          </li>
+          <li>
+            <label htmlFor="height">Height</label>
+            <input
+              name="height"
+              type="number"
+              value={height}
+              onChange={evt => setHeight(parseInt(evt.target.value))}/>
+          </li>
+          <li>
+            <label htmlFor="value">Value</label>
+            <input
+              name="value"
+              type="text"
+              value={value}
+              onChange={evt => dispatch({ type: "SET", cell, value: evt.target.value })}
+              ref={valueInput}
+              autoFocus />
+          </li>
+        </ul>
       </header>
+
       <article>
         <table>
           <thead><tr><th></th>{ columnLabels.map((label) => <th key={label}>{ label }</th> )}</tr></thead>
@@ -63,12 +76,17 @@ export const App = () => {
               return (
                 <tr key={rowIndex}>
                   <th>{ rowIndex }</th>
-                  { columnLabels.map((label, columnIndex) => {
+                  { columnLabels.map((label) => {
+                    const location = label + rowIndex.toString();
                     return (
                       <td
-                        key={label}
-                        onClick={() => setCell(label + rowIndex.toString())}>
-                        <span>{ values[label + rowIndex.toString()] }</span>
+                        className={location === cell ? "emphasise-border" : "" }
+                        key={location}
+                        onClick={() => {
+                          setCell(location);
+                          valueInput.current.focus();
+                        } }>
+                        <span>{ values[location] }</span>
                       </td>
                     );
                   }) }
